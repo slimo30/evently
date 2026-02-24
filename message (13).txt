@@ -1,0 +1,36 @@
+##  Tous les endpoints
+
+###  Authentification (`/api/auth`)
+| Méthode | Route | Description | Auth requise |
+|---------|-------|-------------|--------------|
+| POST | `/api/auth/register` | Créer un compte | Non |
+| POST | `/api/auth/login` | Se connecter → JWT | Non |
+| GET | `/api/auth/me` | Mon profil | Oui |
+
+###  Événements (`/api/events`)
+| Méthode | Route | Description | Auth requise |
+|---------|-------|-------------|--------------|
+| GET | `/api/events/` | Lister + rechercher + filtrer | Non |
+| GET | `/api/events/my-events` | Mes événements créés | Oui |
+| GET | `/api/events/recommendations` |  Reco personnalisées | Oui |
+| GET | `/api/events/{id}` | Détail d'un événement | Non |
+| GET | `/api/events/{id}/similar` |  Events similaires | Non |
+| POST | `/api/events/` | Créer un événement | Oui (organisateur) |
+| PUT | `/api/events/{id}` | Modifier | Oui (propriétaire) |
+| DELETE | `/api/events/{id}` | Supprimer | Oui (propriétaire) |
+
+###  Inscriptions (`/api/registrations`)
+| Méthode | Route | Description | Auth requise |
+|---------|-------|-------------|--------------|
+| POST | `/api/registrations/{event_id}` | S'inscrire | Oui |
+| DELETE | `/api/registrations/{event_id}` | Annuler inscription | Oui |
+| GET | `/api/registrations/my-registrations` | Mes inscriptions | Oui |
+| GET | `/api/registrations/event/{id}/participants` | Participants d'un event | Oui (organisateur) |
+
+###  Analytics (`/api/analytics`)
+| Méthode | Route | Description | Auth requise |
+|---------|-------|-------------|--------------|
+| GET | `/api/analytics/global` | Stats globale plateforme | Oui |
+| GET | `/api/analytics/my-dashboard` | Stats de mes events | Oui |
+
+---

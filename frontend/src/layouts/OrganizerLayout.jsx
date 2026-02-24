@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Calendar, PlusCircle, Menu, X, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Calendar, PlusCircle, Menu, X, ChevronRight, History } from 'lucide-react';
 
 const OrganizerLayout = ({ user }) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -32,6 +32,10 @@ const OrganizerLayout = ({ user }) => {
           <NavLink to="/organizer/create" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} onClick={closeSidebar}>
             <PlusCircle size={20} />
             <span>Create Event</span>
+          </NavLink>
+          <NavLink to="/organizer/history" className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`} onClick={closeSidebar}>
+            <History size={20} />
+            <span>Check-in History</span>
           </NavLink>
         </nav>
       </aside>

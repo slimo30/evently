@@ -23,6 +23,7 @@ import EventEdit from './pages/organizer/EventEdit';
 import ParticipantManager from './pages/organizer/ParticipantManager';
 import Scanner from './pages/organizer/Scanner';
 import EventAnalytics from './pages/organizer/EventAnalytics';
+import OrganizerHistory from './pages/organizer/History';
 
 // Admin Pages
 import AdminAnalytics from './pages/admin/AdminAnalytics';
@@ -84,6 +85,8 @@ const App = () => {
               <Route path="scan/:id" element={<ParticipantManager user={user} />} />
               <Route path="scanner" element={<Scanner user={user} />} />
               <Route path="analytics/:id" element={<EventAnalytics user={user} />} />
+              <Route path="history" element={<OrganizerHistory user={user} />} />
+              <Route path="history/:eventId" element={<OrganizerHistory user={user} />} />
             </Route>
 
             {/* Admin Hub */}

@@ -320,8 +320,10 @@ def get_event_history(
         user = db.query(User).filter(User.id == reg.user_id).first()
         history.append({
             "id": reg.id,
+            "user_id": reg.user_id,
             "user_name": user.name,
             "user_email": user.email,
+            "user_profile_image": user.profile_image,
             "status": reg.status.value,
             "registered_at": reg.registered_at.isoformat() if reg.registered_at else None,
             "checked_in_at": reg.checked_in_at.isoformat() if reg.checked_in_at else None,

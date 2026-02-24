@@ -1,64 +1,60 @@
 import React, { useState, useEffect } from 'react';
-import { api } from '../api';
-import { format, isPast } from 'date-fns';
-import { Calendar, MapPin, Clock, Users, CheckCircle, XCircle } from 'lucide-react';
-import EventCard from '../components/EventCard';
+import { Link } from 'react-router-dom';
+import { api, getImageUrl } from '../api';
+import { format } from 'date-fns';
+import { Calendar, MapPin, Clock, Users, CheckCircle, XCircle, Edit, UserCheck } from 'lucide-react';
 import './History.css';
 
 const History = ({ user }) => {
-  const [pastEvents, setPastEvents] = useState([]);
+  const [publishedEvents, setPublishedEvents] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, attended, missed
+  const [filter, setFilter] = useState('all'); // all, published, draft, past
 
   useEffect(() => {
-    const fetchPastEvents = async () => {
+    const fetchPublishedEvents = async () => {
       try {
-        const registrations = await api.getMyRegistrations();
+        const events = await api.getMyEvents();
         
-        // Filter past events
-        const past = registrations.filter(reg => {
-          const eventDate = new Date(reg.event.date);
-          return isPast(eventDate);
-        });
-
         // Sort by date (most recent first)
-        past.sort((a, b) => new Date(b.event.date) - new Date(a.event.date));
+        events.sort((a, b) => new Date(b.created_at || b.date) - new Date(a.created_at || a.date));
 
-        setPastEvents(past);
+        setPublishedEvents(events);
       } catch (err) {
-        console.error('Failed to fetch past events:', err);
+        console.error('Failed to fetch published events:', err);
       } finally {
         setLoading(false);
       }
     };
 
     if (user) {
-      fetchPastEvents();
+      fetchPublishedEvents();
     }
   }, [user]);
 
-  const filteredEvents = pastEvents.filter(reg => {
-    if (filter === 'attended') return reg.status === 'CHECKED_IN';
-    if (filter === 'missed') return reg.status !== 'CHECKED_IN';
+  const filteredEvents = publishedEvents.filter(event => {
+    const isPast = new Date(event.date) < new Date();
+    if (filter === 'published') return ['APPROVED', 'PUBLISHED', 'approved', 'published'].includes(event.status);
+    if (filter === 'draft') return ['PENDING', 'pending', 'draft', 'DRAFT'].includes(event.status);
+    if (filter === 'past') return isPast;
     return true;
   });
 
   if (loading) {
-    return <div className="history-loading">Loading your history...</div>;
+    return <div className="history-loading">Loading your published events...</div>;
   }
 
   return (
     <div className="history-container">
       <div className="history-header">
-        <h1>Event History</h1>
-        <p>Review your past events and attendance</p>
+        <h1>My Published Events</h1>
+        <p>View all events you created and published</p>
       </div>
 
-      {pastEvents.length === 0 ? (
+      {publishedEvents.length === 0 ? (
         <div className="no-history">
           <Calendar size={64} />
-          <h2>No Past Events</h2>
-          <p>You haven't attended any events yet. Browse upcoming events to get started!</p>
+          <h2>No Published Events</h2>
+          <p>You haven't created any events yet. Start by creating your first event!</p>
         </div>
       ) : (
         <>
@@ -67,19 +63,25 @@ const History = ({ user }) => {
               className={filter === 'all' ? 'active' : ''}
               onClick={() => setFilter('all')}
             >
-              All ({pastEvents.length})
+              All ({publishedEvents.length})
             </button>
             <button
-              className={filter === 'attended' ? 'active' : ''}
-              onClick={() => setFilter('attended')}
+              className={filter === 'published' ? 'active' : ''}
+              onClick={() => setFilter('published')}
             >
-              <CheckCircle size={16} /> Attended ({pastEvents.filter(r => r.status === 'CHECKED_IN').length})
+              <CheckCircle size={16} /> Published ({publishedEvents.filter(e => ['APPROVED', 'PUBLISHED', 'approved', 'published'].includes(e.status)).length})
             </button>
             <button
-              className={filter === 'missed' ? 'active' : ''}
-              onClick={() => setFilter('missed')}
+              className={filter === 'draft' ? 'active' : ''}
+              onClick={() => setFilter('draft')}
             >
-              <XCircle size={16} /> Missed ({pastEvents.filter(r => r.status !== 'CHECKED_IN').length})
+              <Edit size={16} /> Pending ({publishedEvents.filter(e => ['PENDING', 'pending', 'draft', 'DRAFT'].includes(e.status)).length})
+            </button>
+            <button
+              className={filter === 'past' ? 'active' : ''}
+              onClick={() => setFilter('past')}
+            >
+              <XCircle size={16} /> Past ({publishedEvents.filter(e => new Date(e.date) < new Date()).length})
             </button>
           </div>
 
@@ -89,7 +91,7 @@ const History = ({ user }) => {
                 <Calendar />
               </div>
               <div className="stat-info">
-                <h3>{pastEvents.length}</h3>
+                <h3>{publishedEvents.length}</h3>
                 <p>Total Events</p>
               </div>
             </div>
@@ -98,8 +100,17 @@ const History = ({ user }) => {
                 <CheckCircle />
               </div>
               <div className="stat-info">
-                <h3>{pastEvents.filter(r => r.status === 'CHECKED_IN').length}</h3>
-                <p>Attended</p>
+                <h3>{publishedEvents.filter(e => ['APPROVED', 'PUBLISHED', 'approved', 'published'].includes(e.status)).length}</h3>
+                <p>Published</p>
+              </div>
+            </div>
+            <div className="stat-card">
+              <div className="stat-icon registered">
+                <Users />
+              </div>
+              <div className="stat-info">
+                <h3>{publishedEvents.reduce((sum, e) => sum + (e.registrations?.length || 0), 0)}</h3>
+                <p>Total Registrations</p>
               </div>
             </div>
             <div className="stat-card">
@@ -107,47 +118,66 @@ const History = ({ user }) => {
                 <XCircle />
               </div>
               <div className="stat-info">
-                <h3>{pastEvents.filter(r => r.status !== 'CHECKED_IN').length}</h3>
-                <p>Missed</p>
+                <h3>{publishedEvents.filter(e => new Date(e.date) < new Date()).length}</h3>
+                <p>Past Events</p>
               </div>
             </div>
           </div>
 
           <div className="history-events">
-            {filteredEvents.map((registration) => (
-              <div key={registration.id} className="history-event-card">
-                <div className={`attendance-badge ${registration.status === 'CHECKED_IN' ? 'attended' : 'missed'}`}>
-                  {registration.status === 'CHECKED_IN' ? (
-                    <>
-                      <CheckCircle size={16} />
-                      <span>Attended</span>
-                    </>
-                  ) : (
-                    <>
-                      <XCircle size={16} />
-                      <span>Missed</span>
-                    </>
-                  )}
-                </div>
-                <EventCard
-                  event={registration.event}
-                  user={user}
-                  showActions={false}
-                />
-                <div className="registration-details">
-                  <p className="registration-date">
-                    <Clock size={14} />
-                    Registered: {format(new Date(registration.created_at), 'MMM dd, yyyy')}
-                  </p>
-                  {registration.checked_in_at && (
-                    <p className="checkin-date">
-                      <CheckCircle size={14} />
-                      Checked in: {format(new Date(registration.checked_in_at), 'MMM dd, yyyy HH:mm')}
+            {filteredEvents.map((event) => {
+              const eventDate = new Date(event.date);
+              const isPastEvent = eventDate < new Date();
+              let statusLabel = 'Published';
+              let statusClass = 'attended';
+
+              if (['PENDING', 'pending', 'draft', 'DRAFT'].includes(event.status)) {
+                statusLabel = 'Pending Approval';
+                statusClass = 'registered';
+              } else if (isPastEvent) {
+                statusLabel = 'Completed';
+                statusClass = 'missed';
+              }
+
+              return (
+                <div key={event.id} className="history-event-card">
+                  <div className={`attendance-badge ${statusClass}`}>
+                    {statusClass === 'attended' && <CheckCircle size={16} />}
+                    {statusClass === 'missed' && <XCircle size={16} />}
+                    {statusClass === 'registered' && <Edit size={16} />}
+                    <span>{statusLabel}</span>
+                  </div>
+
+                  {/* Inline event summary (no EventCard so we control the actions) */}
+                  <div className="hec-body">
+                    {event.image_url && (
+                      <img src={getImageUrl(event.image_url)} alt={event.title} className="hec-thumb" />
+                    )}
+                    <div className="hec-info">
+                      <h3 className="hec-title">{event.title}</h3>
+                      <div className="hec-meta">
+                        <span><Calendar size={13} /> {format(new Date(event.date_start || event.date), 'MMM dd, yyyy')}</span>
+                        {event.location && <span><MapPin size={13} /> {event.location}</span>}
+                        <span><Users size={13} /> {event.participants_count ?? 0} / {event.max_participants} registered</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="registration-details">
+                    <p className="registration-date">
+                      <Clock size={14} />
+                      Created: {format(new Date(event.created_at || event.date_start || event.date), 'MMM dd, yyyy')}
                     </p>
-                  )}
+                    <Link
+                      to={`/organizer/history/${event.id}`}
+                      className="btn-view-history"
+                    >
+                      <UserCheck size={15} /> View Check-in History
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </>
       )}

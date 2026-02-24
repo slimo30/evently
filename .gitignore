@@ -90,3 +90,8 @@ backend/uploads/profiles/*
 *.tmp
 *.temp
 .cache
+
+# Unneeded files
+message (13).txt
+backend/test_*
+.venv/

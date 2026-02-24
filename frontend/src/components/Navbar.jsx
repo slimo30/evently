@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Calendar, User, LogOut, LayoutDashboard, ShieldCheck, QrCode, Menu, X, History } from 'lucide-react';
+import { Calendar, User, LogOut, LayoutDashboard, ShieldCheck, QrCode, Menu, X } from 'lucide-react';
 
 const Navbar = ({ user, setUser }) => {
   const navigate = useNavigate();
@@ -54,10 +54,6 @@ const Navbar = ({ user, setUser }) => {
               <Link to="/profile" className="nav-link" onClick={closeMenu}>
                 <User size={18} />
                 <span>Profile</span>
-              </Link>
-              <Link to="/history" className="nav-link" onClick={closeMenu}>
-                <History size={18} />
-                <span>History</span>
               </Link>
               <button onClick={handleLogout} className="btn-logout">
                 <LogOut size={18} />

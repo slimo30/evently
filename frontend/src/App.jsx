@@ -9,8 +9,6 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import EventDetails from './pages/EventDetails';
 import Profile from './pages/Profile';
-import History from './pages/History';
-
 // Layouts
 import OrganizerLayout from './layouts/OrganizerLayout';
 import AdminLayout from './layouts/AdminLayout';
@@ -66,11 +64,6 @@ const App = () => {
             <Route
               path="/profile"
               element={user ? <Profile user={user} setUser={setUser} /> : <Navigate to="/login" />}
-            />
-
-            <Route
-              path="/history"
-              element={user ? <History user={user} /> : <Navigate to="/login" />}
             />
 
             {/* Organizer Hub */}
